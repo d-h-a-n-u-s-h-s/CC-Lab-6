@@ -3,13 +3,19 @@ pipeline {
 
     stages {
 
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build Backend Image') {
             steps {
                 sh 'docker build -t backend-app backend'
             }
         }
 
-        stage('Deploy Backends') {
+        stage('Deploy Backend Containers') {
             steps {
                 sh '''
                 docker rm -f backend1 backend2 || true
@@ -22,7 +28,7 @@ pipeline {
             }
         }
 
-        stage('Start NGINX Load Balancer') {
+        stage('Deploy NGINX Load Balancer') {
             steps {
                 sh '''
                 docker rm -f nginx-lb || true
@@ -42,9 +48,11 @@ pipeline {
     }
 
     post {
+        success {
+            echo 'Pipeline executed successfully. NGINX load balancer is running.'
+        }
         failure {
-            echo "Pipeline failed. Check console logs."
+            echo 'Pipeline failed. Check console logs.'
         }
     }
 }
-
